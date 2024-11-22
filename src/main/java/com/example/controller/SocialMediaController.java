@@ -1,7 +1,7 @@
 package com.example.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -12,6 +12,8 @@ import com.example.repository.AccountRepository;
 import com.example.repository.MessageRepository;
 import com.example.service.AccountService;
 import com.example.service.MessageService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
@@ -20,7 +22,6 @@ import com.example.service.MessageService;
  * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
  */
 @RestController
-@ResponseStatus(HttpStatus.OK)
 public class SocialMediaController {
     AccountService accService;
     MessageService mesService;
@@ -29,28 +30,35 @@ public class SocialMediaController {
 
     public SocialMediaController(){
         this.accService = new AccountService(accRepo);
-        //this.mesService = new MessageService(mesRepo);
+        this.mesService = new MessageService(mesRepo);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<String> handleInvalidInput(HttpMessageNotReadableException e){
+        return ResponseEntity.badRequest().body("Invalid payload");
     }
 
     //TODO: Fix Status Code
     @PostMapping(value = "/register")
-    public ResponseEntity newAccount(@RequestBody String username, @RequestBody String password) {
-        System.out.println("p1");
-        Account foundAcc = accService.findAccountByUsername(username);
-        
+    public ResponseEntity newAccount(@RequestBody String username, @RequestBody String password) throws JsonProcessingException {
+        /*try {
             if(username == "" || password == "" || password.length() < 4){
-                System.out.println("f1");
                 return ResponseEntity.status(400).body("Bad Request");
-            }
-            else if(foundAcc != null){
-                System.out.println("f2");
-                return ResponseEntity.status(409).body("Username alreasy exists");
-            }
-            else{
-                System.out.println("p2");
+            } 
+
+            Account foundAcc = accService.findAccountByUsername(username);
+            if(foundAcc != null){
+                return ResponseEntity.status(409).body("Username already exists");
+            } else {
                 Account newAcc = accService.registerAccount(new Account(username, password));
-                return ResponseEntity.status(200).body(newAcc); //TODO
+                return ResponseEntity.status(200).body(newAcc);
             }
+        } catch (Exception e) {
+            // TODO: handle exception
+            return ResponseEntity.status(400).body(e);
+        }*/
+        return ResponseEntity.status(200).body(username);
+        
        
     }
 
@@ -58,17 +66,11 @@ public class SocialMediaController {
     @PostMapping("/login")
     public ResponseEntity AccountLogin(@RequestBody String username, @RequestBody String password){
         Account foundAcc = accService.findAccountByUsername(username);
-        if(username == "" || password == "" || password.length() < 4){
+        if(username == "" || password == "" || password.length() < 4 || foundAcc == null){
             return ResponseEntity.status(401).body("Unauthorized");
+        } else {  
+            return ResponseEntity.status(200).body(foundAcc);
         }
-        else {  
-            if(foundAcc != null){
-                return ResponseEntity.status(401).body("Unauthorized");
-            }
-            else {
-                return ResponseEntity.status(200).body(foundAcc);
-            }
-            }
     }
     /*
 
