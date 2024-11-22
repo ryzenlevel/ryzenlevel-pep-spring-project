@@ -1,11 +1,15 @@
 package com.example.controller;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.entity.Account;
 import com.example.entity.Message;
+import com.example.repository.AccountRepository;
+import com.example.repository.MessageRepository;
 import com.example.service.AccountService;
 import com.example.service.MessageService;
 
@@ -15,36 +19,73 @@ import com.example.service.MessageService;
  * where applicable as well as the @ResponseBody and @PathVariable annotations. You should
  * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
  */
-@Controller
+@RestController
+@ResponseStatus(HttpStatus.OK)
 public class SocialMediaController {
     AccountService accService;
     MessageService mesService;
+    AccountRepository accRepo;
+    MessageRepository mesRepo;
 
     public SocialMediaController(){
-        this.accService = new AccountService();
-        this.mesService = new MessageService();
+        this.accService = new AccountService(accRepo);
+        //this.mesService = new MessageService(mesRepo);
     }
 
-    //TODO: Add logic to method
+    //TODO: Fix Status Code
     @PostMapping("/register")
     public Account newAccount(@RequestBody String username, @RequestBody String password) {
-        if(username == "" || password == ""){
-            
+        System.out.println("p1");
+        Account foundAcc = accService.findAccountByUsername(username);
+        try{
+            if(username == "" || password == "" || password.length() < 4){
+                System.out.println("f1");
+                throw new Exception();
+            }
+            else if(foundAcc != null){
+                System.out.println("f2");
+                throw new Exception();
+            }
+            else{
+                System.out.println("p2");
+                return accService.registerAccount(new Account(username, password)); //TODO
+            }
+        } catch (Exception e){
+            if(username == "" || password == "" || password.length() < 4){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid username or password");
+            }
+            else {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+            }
         }
-        else if()
     }
 
-    //TODO: Add logic to method
+    //TODO: Fix Status Code
     @PostMapping("/login")
     public Account AccountLogin(@RequestBody String username, @RequestBody String password){
-        if(username == "" || password == ""){
-            
+        try {
+            Account foundAcc = accService.findAccountByUsername(username);
+            if(username == "" || password == "" || password.length() < 4){
+                throw new Exception();
+            }
+            else {  
+                if(foundAcc != null){
+                    throw new Exception();
+                }
+                else {
+                    return foundAcc;
+                }
+            }
+        } catch (Exception e) {
+            // handle exception
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login failed");
         }
     }
+    /*
 
     //TODO: Add logic to method
     @PostMapping("/messages")
-    public Message newMessage(@RequestBody String message, @RequestBody String postedBy){
+    public Message newMessage(@RequestBody String message, @RequestBody String postedBy, @RequestBody Long timePosted){
 
     }
 
@@ -71,5 +112,5 @@ public class SocialMediaController {
     public Message updateMessageById(@PathVariable long messageId){
 
     }
-
+    */
 }
