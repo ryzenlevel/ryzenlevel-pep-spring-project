@@ -33,53 +33,42 @@ public class SocialMediaController {
     }
 
     //TODO: Fix Status Code
-    @PostMapping("/register")
-    public Account newAccount(@RequestBody String username, @RequestBody String password) {
+    @PostMapping(value = "/register")
+    public ResponseEntity newAccount(@RequestBody String username, @RequestBody String password) {
         System.out.println("p1");
         Account foundAcc = accService.findAccountByUsername(username);
-        try{
+        
             if(username == "" || password == "" || password.length() < 4){
                 System.out.println("f1");
-                throw new Exception();
+                return ResponseEntity.status(400).body("Bad Request");
             }
             else if(foundAcc != null){
                 System.out.println("f2");
-                throw new Exception();
+                return ResponseEntity.status(409).body("Username alreasy exists");
             }
             else{
                 System.out.println("p2");
-                return accService.registerAccount(new Account(username, password)); //TODO
+                Account newAcc = accService.registerAccount(new Account(username, password));
+                return ResponseEntity.status(200).body(newAcc); //TODO
             }
-        } catch (Exception e){
-            if(username == "" || password == "" || password.length() < 4){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid username or password");
-            }
-            else {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
-            }
-        }
+       
     }
 
     //TODO: Fix Status Code
     @PostMapping("/login")
-    public Account AccountLogin(@RequestBody String username, @RequestBody String password){
-        try {
-            Account foundAcc = accService.findAccountByUsername(username);
-            if(username == "" || password == "" || password.length() < 4){
-                throw new Exception();
-            }
-            else {  
-                if(foundAcc != null){
-                    throw new Exception();
-                }
-                else {
-                    return foundAcc;
-                }
-            }
-        } catch (Exception e) {
-            // handle exception
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login failed");
+    public ResponseEntity AccountLogin(@RequestBody String username, @RequestBody String password){
+        Account foundAcc = accService.findAccountByUsername(username);
+        if(username == "" || password == "" || password.length() < 4){
+            return ResponseEntity.status(401).body("Unauthorized");
         }
+        else {  
+            if(foundAcc != null){
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            else {
+                return ResponseEntity.status(200).body(foundAcc);
+            }
+            }
     }
     /*
 
