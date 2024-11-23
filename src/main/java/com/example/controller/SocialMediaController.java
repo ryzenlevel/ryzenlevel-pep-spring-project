@@ -1,19 +1,12 @@
 package com.example.controller;
 
 import org.springframework.http.*;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.example.entity.Account;
 import com.example.entity.Message;
-import com.example.repository.AccountRepository;
-import com.example.repository.MessageRepository;
 import com.example.service.AccountService;
 import com.example.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
@@ -23,63 +16,60 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @RestController
 public class SocialMediaController {
+    
     AccountService accService;
     MessageService mesService;
-    AccountRepository accRepo;
-    MessageRepository mesRepo;
 
-    public SocialMediaController(){
-        this.accService = new AccountService(accRepo);
-        this.mesService = new MessageService(mesRepo);
+    public SocialMediaController(AccountService accService, MessageService mesService){
+        this.accService = accService;
+        this.mesService = mesService;
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<String> handleInvalidInput(HttpMessageNotReadableException e){
-        return ResponseEntity.badRequest().body("Invalid payload");
-    }
-
-    //TODO: Fix Status Code
-    @PostMapping(value = "/register")
-    public ResponseEntity newAccount(@RequestBody String username, @RequestBody String password) throws JsonProcessingException {
-        /*try {
-            if(username == "" || password == "" || password.length() < 4){
-                return ResponseEntity.status(400).body("Bad Request");
-            } 
-
-            Account foundAcc = accService.findAccountByUsername(username);
-            if(foundAcc != null){
-                return ResponseEntity.status(409).body("Username already exists");
-            } else {
-                Account newAcc = accService.registerAccount(new Account(username, password));
-                return ResponseEntity.status(200).body(newAcc);
-            }
-        } catch (Exception e) {
-            // TODO: handle exception
-            return ResponseEntity.status(400).body(e);
-        }*/
-        return ResponseEntity.status(200).body(username);
-        
+    @PostMapping("/register")
+    public ResponseEntity<Account> newAccount(@RequestBody Account acc) throws JsonProcessingException {
+        if(acc.getUsername() == "" ||  acc.getPassword().length() < 4){
+            return ResponseEntity.status(400).build();
+        } 
+        else if(accService.findAccountByUsername(acc.getUsername()) != null){
+            return ResponseEntity.status(409).build();
+        } else {
+            Account newAcc = accService.registerAccount(acc);
+            return ResponseEntity.status(200).body(newAcc);
+        }
+              
        
     }
 
-    //TODO: Fix Status Code
+    
     @PostMapping("/login")
-    public ResponseEntity AccountLogin(@RequestBody String username, @RequestBody String password){
-        Account foundAcc = accService.findAccountByUsername(username);
-        if(username == "" || password == "" || password.length() < 4 || foundAcc == null){
-            return ResponseEntity.status(401).body("Unauthorized");
+    public ResponseEntity<Account> AccountLogin(@RequestBody Account acc) throws JsonProcessingException{
+        if(acc.getUsername() != "" && acc.getPassword().length() > 4){
+            Account foundAcc = accService.findAccountByUsername(acc.getUsername());
+            if(foundAcc != null && foundAcc.getPassword().equals(acc.getPassword())){
+                return ResponseEntity.status(200).body(foundAcc);
+            }
+            else {
+                return ResponseEntity.status(401).build();
+            }
         } else {  
-            return ResponseEntity.status(200).body(foundAcc);
+            return ResponseEntity.status(401).build();
         }
     }
-    /*
+    
 
     //TODO: Add logic to method
     @PostMapping("/messages")
-    public Message newMessage(@RequestBody String message, @RequestBody String postedBy, @RequestBody Long timePosted){
-
+    public ResponseEntity<Message> newMessage(@RequestBody Message mes){
+        if(mes.getMessageText() != "" 
+            && mes.getMessageText().length() < 255 
+            && mes.getPostedBy().equals(accService.findAccountById(mes.getPostedBy()))){
+            Message savedMes =  mesService.saveMessage(mes);
+            return ResponseEntity.status(200).body(savedMes);
+        } else {
+            return ResponseEntity.status(400).build();
+        }
     }
-
+/*
     //TODO: Add logic to method
     @GetMapping("/messages")
     public Message getMessages() {

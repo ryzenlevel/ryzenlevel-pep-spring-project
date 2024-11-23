@@ -1,5 +1,7 @@
 package com.example.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,15 +21,11 @@ public class AccountService {
         return accRepo.save(acc);
     }
 
-    public Account findAccount(Account acc){
-        return accRepo.getById(acc.getAccountId());
-    }
+    public Account findAccountById(int acc){
+        Optional<Account> foundAcc = accRepo.findById(acc);
 
-    public Account findAccountById(Account acc){
-        Account foundAcc = accRepo.findAccountByAccountId(acc.getAccountId());
-
-        if(foundAcc != null){
-            return foundAcc;
+        if(foundAcc.isPresent()){
+            return foundAcc.get();
         }
         else{
             return null;
@@ -35,13 +33,6 @@ public class AccountService {
     }
 
     public Account findAccountByUsername(String username){
-        Account foundAcc = accRepo.findAccountByUsername(username);
-        
-        if(foundAcc != null){
-            return foundAcc;
-        }
-        else{
-            return null;
-        }
+        return accRepo.findByUsername(username);
     }
 }
