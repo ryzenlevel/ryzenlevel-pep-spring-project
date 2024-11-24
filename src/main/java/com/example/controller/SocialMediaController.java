@@ -61,22 +61,22 @@ public class SocialMediaController {
     //TODO: Fix status code issue
     @PostMapping("/messages")
     public ResponseEntity<Message> newMessage(@RequestBody Message mes){
-        if(mes.getMessageText() != "" && mes.getMessageText().length() < 255){ 
-            List<Account> allAcc = accService.findAllAccount();
-            for(Account accCheck : allAcc){
-                if(mes.getPostedBy() != accCheck.getAccountId()){
-                    continue;  
-                }
-                else {
+        if(mes.getMessageText() != ""){
+            if(mes.getMessageText().length() < 255){
+                if(mes.getPostedBy() == accService.findAccountById(mes.getPostedBy()).getAccountId()){
                     Message savedMes = mesService.saveMessage(mes);
                     return ResponseEntity.status(200).body(savedMes);
+                } else {
+                    return ResponseEntity.status(400).build();
                 }
+            } else {
+                return ResponseEntity.status(400).build();
             }
-            return ResponseEntity.status(400).build();
         } else {
             return ResponseEntity.status(400).build();
-        }
-    }
+        }      
+    } 
+    
 
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> getMessages() {
@@ -89,7 +89,6 @@ public class SocialMediaController {
         return ResponseEntity.status(200).body(mes);
     }
 
-    //TODO: Add logic to method
     @DeleteMapping("/messages/{messageId}")
     public ResponseEntity<Integer> deleteMessageById(@PathVariable int messageId){
         int deleteSuccess = mesService.deleteMessage(messageId);
@@ -102,7 +101,6 @@ public class SocialMediaController {
         }
     }
 
-    //TODO: Add logic to method
     @PatchMapping("/messages/{messageId}")
     public ResponseEntity<Integer> updateMessageById(@PathVariable int messageId, @RequestBody Message mes){
         Message foundMessage = mesService.findMessageById(messageId);
@@ -123,10 +121,17 @@ public class SocialMediaController {
         }
     }
 
-    //TODO:Add logic to method
-    @GetMapping("/accounts/{accountid}/messages")
+    //TODO:Fix issues
+    @GetMapping("/accounts/{accountId}/messages")
     public ResponseEntity<List<Message>> getMessagesByAccountId(@PathVariable int accountId){
-        return null;
+        List<Message> foundMessages = mesService.findMessagesByAccountId(accountId);
+        if(foundMessages != null){
+            return ResponseEntity.status(200).body(foundMessages); 
+        }
+        else {
+            return ResponseEntity.status(200).build();
+        }
+       
     }
 
 }
