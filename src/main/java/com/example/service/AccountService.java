@@ -1,5 +1,6 @@
 package com.example.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,5 +35,9 @@ public class AccountService {
 
     public Account findAccountByUsername(String username){
         return accRepo.findByUsername(username);
+    }
+
+    public List<Account> findAllAccount() {
+        return accRepo.findAll();
     }
 }
