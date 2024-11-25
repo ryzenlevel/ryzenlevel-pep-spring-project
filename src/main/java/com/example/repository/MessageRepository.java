@@ -9,6 +9,7 @@ import com.example.entity.Message;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Integer>{
+    //searches database for all messages with specific id
     @Query("FROM Message WHERE postedBy = :accId")
     List<Message> findAllByPostedBy(@Param("accId") int accountId);
 }

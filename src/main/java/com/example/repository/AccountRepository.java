@@ -7,5 +7,6 @@ import com.example.entity.Account;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer>{
+    //searches database for username
     Account findByUsername(String username);
 }
