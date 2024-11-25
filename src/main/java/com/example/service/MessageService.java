@@ -18,7 +18,6 @@ public class MessageService {
         this.mesRepo = messageRepo;
     }
 
-    //TODO: Fix issue
     public Message saveMessage(Message mes){
         return mesRepo.save(mes);
     }
@@ -69,7 +68,6 @@ public class MessageService {
         }
     }
 
-    //TODO:Fix issues
     public List<Message> findMessagesByAccountId(int accountId){
         return mesRepo.findAllByPostedBy(accountId);
     }

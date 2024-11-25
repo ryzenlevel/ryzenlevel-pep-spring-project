@@ -61,11 +61,16 @@ public class SocialMediaController {
     //TODO: Fix status code issue
     @PostMapping("/messages")
     public ResponseEntity<Message> newMessage(@RequestBody Message mes){
-        if(mes.getMessageText() != ""){
-            if(mes.getMessageText().length() < 255){
-                if(mes.getPostedBy() == accService.findAccountById(mes.getPostedBy()).getAccountId()){
-                    Message savedMes = mesService.saveMessage(mes);
-                    return ResponseEntity.status(200).body(savedMes);
+        Account acc = accService.findAccountById(mes.getPostedBy());
+        if(acc != null){
+            if(mes.getMessageText() != ""){
+                if(mes.getMessageText().length() < 255){
+                    if(mes.getPostedBy() == acc.getAccountId()){ //here
+                        Message savedMes = mesService.saveMessage(mes);
+                        return ResponseEntity.status(200).body(savedMes);
+                    } else {
+                        return ResponseEntity.status(400).build();
+                    }
                 } else {
                     return ResponseEntity.status(400).build();
                 }
